@@ -1,6 +1,6 @@
 
 # !!!!!!!!!!!!! EDIT THE FOLLOWING LINE AS NEEDED TO POINT AT YOUR BASIC GRAPHICS LIBARARY INSTALL !!!!!!!!!!!!! 
-list(APPEND CMAKE_PREFIX_PATH ../basicgraphics/build/install ../minvr/build/install /Volumes/BOOTCAMP/Users/bjackson/Documents/classes/comp494-graphics/code/basicgraphics/build/install /Volumes/BOOTCAMP/Users/bjackson/Documents/classes/comp494-graphics/code/minvr/build/install)
+list(APPEND CMAKE_PREFIX_PATH ../basicgraphics/build/install ../minvr/build/install /Volumes/Windows/Users/bjackson/Documents/classes/comp494-graphics/code/basicgraphics/build/install /Volumes/Windows/Users/bjackson/Documents/classes/comp494-graphics/code/minvr/build/install)
 
 
 
@@ -82,11 +82,9 @@ AutoBuild_use_package_OpenGL(${PROJECT_NAME} PUBLIC)
 
 if (NOT MSVC)
    find_package(ZLIB REQUIRED)
-endif()
-
-if (APPLE)
    find_library(CORE_FOUNDATION_FRAMEWORK CoreFoundation)
    target_link_libraries(${PROJECT_NAME} PUBLIC ${CORE_FOUNDATION_FRAMEWORK})
+   add_definitions(-DGL_SILENCE_DEPRECATION)
 endif()
 
 # GLEW
@@ -109,46 +107,66 @@ endif(WIN32)
 #					   )
 			
 #copy the basic graphics resources to the build directory			
+get_filename_component(RESOURCES_RESOLVED_PATH "${BasicGraphics_DIR}/../../../../../resources"
+                       REALPATH CACHE)      
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${BasicGraphics_DIR}/../../../../../resources $<TARGET_FILE_DIR:${PROJECT_NAME}>
-					   )
+                       "${RESOURCES_RESOLVED_PATH}" $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+             )
 
 if( MSVC )
   # in order to prevent DLL hell, each of the DLLs have to be suffixed with the major version and msvc prefix
-  if( MSVC70 OR MSVC71 )
-    set(MSVC_PREFIX "vc70")
-  elseif( MSVC80 )
-    set(MSVC_PREFIX "vc80")
-  elseif( MSVC90 )
-    set(MSVC_PREFIX "vc90")
-  elseif( MSVC10 )
-    set(MSVC_PREFIX "vc100")
-  elseif( MSVC11 )
-    set(MSVC_PREFIX "vc110")
-  elseif( MSVC12 )
-    set(MSVC_PREFIX "vc120")
-  elseif( MSVC14 )
-    set(MSVC_PREFIX "vc140")
+  # CMake 3.12 added a variable for this
+  if(MSVC_TOOLSET_VERSION)
+    set(MSVC_PREFIX "vc${MSVC_TOOLSET_VERSION}")
   else()
-    set(MSVC_PREFIX "vc150")
+    if( MSVC70 OR MSVC71 )
+      set(MSVC_PREFIX "vc70")
+    elseif( MSVC80 )
+      set(MSVC_PREFIX "vc80")
+    elseif( MSVC90 )
+      set(MSVC_PREFIX "vc90")
+    elseif( MSVC10 )
+      set(MSVC_PREFIX "vc100")
+    elseif( MSVC11 )
+      set(MSVC_PREFIX "vc110")
+    elseif( MSVC12 )
+      set(MSVC_PREFIX "vc120")
+    elseif( MSVC_VERSION LESS 1910)
+      set(MSVC_PREFIX "vc140")
+    elseif( MSVC_VERSION LESS 1920)
+      set(MSVC_PREFIX "vc141")
+    elseif( MSVC_VERSION LESS 1930)
+      set(MSVC_PREFIX "vc142")
+    else()
+      MESSAGE(WARNING "unknown msvc version ${MSVC_VERSION}")
+      set(MSVC_PREFIX "vc150")
+    endif()
   endif()
-  set(ASSIMP_LIBRARY_SUFFIX "-${MSVC_PREFIX}-mt" CACHE STRING "the suffix for the assimp windows library" )
+  set(ASSIMP_LIBRARY_SUFFIX "-${MSVC_PREFIX}-mt" CACHE STRING "the suffix for the assimp windows library")
   #copy assimp dll files to build folder so that the executable can find them in the working directory
-  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E copy
-                         ${BasicGraphics_DIR}/../../../bin/assimp${ASSIMP_LIBRARY_SUFFIX}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
-		  			   )
+  #get_filename_component(ASSIMP_RESOLVED_PATH "${BasicGraphics_DIR}\\..\\..\\..\\bin\\assimp${ASSIMP_LIBRARY_SUFFIX}.dll"
+  #                     REALPATH CACHE)
+  
+  #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+  #                   COMMAND ${CMAKE_COMMAND} -E copy
+  #                       "${ASSIMP_RESOLVED_PATH}" $<TARGET_FILE_DIR:${PROJECT_NAME}>
+#              )
 
+  get_filename_component(GLEWOPT_RESOLVED_PATH "${MinVR_DIR}\\..\\..\\..\\bin\\glew32.dll"
+                       REALPATH CACHE)            
   add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                      COMMAND ${CMAKE_COMMAND} -E copy
-                         ${MinVR_DIR}/../../../bin/glew32.dll $<TARGET_FILE_DIR:${PROJECT_NAME}> 
-		  			   )
+                         "${GLEWOPT_RESOLVED_PATH}" $<TARGET_FILE_DIR:${PROJECT_NAME}>
+               )
+             
+  get_filename_component(GLEWDEB_RESOLVED_PATH "${MinVR_DIR}\\..\\..\\..\\bin\\glew32d.dll"
+                       REALPATH CACHE)  
   add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                      COMMAND ${CMAKE_COMMAND} -E copy
-                         ${MinVR_DIR}/../../../bin/glew32d.dll $<TARGET_FILE_DIR:${PROJECT_NAME}> 
-		  			   )					   
-endif()					   
+                         "${GLEWDEB_RESOLVED_PATH}" $<TARGET_FILE_DIR:${PROJECT_NAME}> 
+               )             
+endif()          					   
 				  
 
 AutoBuild_check_status()

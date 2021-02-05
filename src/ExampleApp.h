@@ -53,7 +53,6 @@ public:
     virtual void onRenderGraphicsScene(const VRGraphicsState& state);
     virtual void onRenderGraphicsContext(const VRGraphicsState& state);
     
-    virtual void drawSphere(float angle, float distance, float radius, vec4 color);
     
 private:
 

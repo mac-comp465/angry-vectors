@@ -78,20 +78,6 @@ void ExampleApp::onTrackerMove(const VRTrackerEvent &event) {
 	// We will use trackers when we do a virtual reality assignment. For now, you can ignore this input type.
 }
 
-void ExampleApp::drawSphere(float angle, float distance, float radius, vec4 color){
-    
-    // a 3D unit vector in the XY plane
-    vec3 direction(glm::cos(angle), glm::sin(angle), 0);
-    
-    // point = point + scalar*vector
-    vec3 position = vec3(0,0,0) + distance*direction;
-    
-    Sphere sphere(position, radius, color);
-    sphere.draw(_shader, glm::mat4(1.0));
-    
-    Line connector(vec3(0,0,0), position, vec3(0,0,1), 0.05, vec4(0,0,0,1) );
-    connector.draw(_shader, glm::mat4(1.0));
-}
 
 void ExampleApp::onRenderGraphicsContext(const VRGraphicsState &renderState) {
     // This routine is called once per graphics context at the start of the
