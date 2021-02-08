@@ -18,6 +18,7 @@ ExampleApp::ExampleApp(int argc, char** argv) : VRApp(argc, argv)
 	_lastTime = 0.0;
     _curFrameTime = 0.0;
     time = 0.0;
+    _position = vec3(0,0,0);
 }
 
 ExampleApp::~ExampleApp()
