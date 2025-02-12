@@ -11,6 +11,7 @@ Win32
 Debug
 Release
 *.pyc
+.vs/
 
 # build files
 build*/
